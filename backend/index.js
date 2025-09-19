@@ -12,15 +12,24 @@ const app = express()
 // Security middleware
 app.use(helmet())
 
-// CORS configuration - FIXED
+// CORS configuration - uses FRONTEND_URL from .env (supports comma-separated list)
+const envOrigins = (process.env.FRONTEND_URL || '').split(',').map(s => s.trim()).filter(Boolean)
+// Provide sensible dev defaults if FRONTEND_URL is not set
+const defaultDevOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+]
+const allowedOrigins = envOrigins.length ? envOrigins : defaultDevOrigins
+
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',    // React development server
-    'http://localhost:3001',    // Alternative React port
-    'http://127.0.0.1:3000',    // Alternative localhost format
-    'https://yourdomain.com',   // Your production frontend domain
-    // Add your actual frontend URLs here
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, health checks)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`), false)
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
