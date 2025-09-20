@@ -12,20 +12,14 @@ const app = express()
 // Security middleware
 app.use(helmet())
 
-// CORS configuration - uses FRONTEND_URL from .env (supports comma-separated list)
-const envOrigins = (process.env.FRONTEND_URL || '').split(',').map(s => s.trim()).filter(Boolean)
-// Provide sensible dev defaults if FRONTEND_URL is not set
-const defaultDevOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-]
-const allowedOrigins = envOrigins.length ? envOrigins : defaultDevOrigins
-
+// CORS configuration - allow only exact FRONTEND_URL from env
+const allowedOrigin = process.env.FRONTEND_URL
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, health checks)
-    if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin)) {
+    if (!allowedOrigin) {
+      return callback(new Error('CORS misconfiguration: FRONTEND_URL is not set'), false)
+    }
+    if (origin === allowedOrigin) {
       return callback(null, true)
     }
     return callback(new Error(`CORS blocked for origin: ${origin}`), false)
@@ -119,6 +113,8 @@ app.use("*", (req, res) => {
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
+  console.log('[Startup] CORS allowed exact origins:', exactOrigins)
+  console.log('[Startup] CORS allowed wildcard hosts:', wildcardHosts)
   // Startup integration checks (non-fatal)
   verifyEmailConfig().then((status) => {
     if (status.configured) {
