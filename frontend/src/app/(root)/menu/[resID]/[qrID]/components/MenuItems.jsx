@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Plus, Minus, X } from "lucide-react"
+import BannerMedia from "../../../../../../components/BannerMedia"
 
 // Safely compute the lowest available variant price
 function getLowestAvailablePrice(item) {
@@ -22,79 +24,112 @@ function getVariantTotalQty(cart, item) {
   return Object.entries(cart).reduce((sum, [key, val]) => (key.startsWith(prefix) ? sum + (val || 0) : sum), 0)
 }
 
-// Bottom sheet for selecting variants (mobile)
+// Bottom sheet for selecting variants (mobile) with animations
 function VariantBottomSheet({ open, onClose, item, cart, onQuantityChange }) {
-  if (!open) return null
   const variants = (item?.variants || []).filter(v => v && v.isAvailable !== false)
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:hidden" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative w-full bg-[#3a022e] border-t border-[#800020] rounded-t-2xl p-4 pt-3 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start gap-3">
-          <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-md" />
-          <div className="flex-1">
-            <h3 className="text-white font-semibold text-base leading-tight">{item.name}</h3>
-            <p className="text-xs text-gray-300 line-clamp-2">{item.description}</p>
-          </div>
-          <button
-            aria-label="Close"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 md:hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Backdrop */}
+          <motion.div
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="p-1 rounded-full bg-[#800020] text-white shrink-0"
+          />
+
+          {/* Sheet */}
+          <motion.div
+            className="absolute bottom-0 left-0 right-0"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.9 }}
           >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="mt-3">
-          <p className="text-xs text-gray-300 mb-2">Choose an option</p>
-          <div className="max-h-[45vh] overflow-y-auto pr-1 space-y-2">
-            {variants.map(v => {
-              const composed = {
-                ...item,
-                id: `${item.menuID}:${v.name}`,
-                name: `${item.name} - ${v.name}`,
-                price: v.price,
-              }
-              const qty = cart?.[composed.id] || 0
-              return (
-                <div key={composed.id} className="flex items-center justify-between bg-[#510400] border border-[#800020] rounded-lg p-2">
-                  <div>
-                    <p className="text-sm text-white font-medium leading-tight">{v.name}</p>
-                    <p className="text-xs text-[#FFFAFA]">₹{(v.price || 0).toFixed(2)}</p>
-                  </div>
-                  {qty > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, Math.max(0, qty - 1)) }}
-                        className="px-2 py-1 rounded bg-[#800020] text-white"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="text-white text-sm w-6 text-center">{qty}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, qty + 1) }}
-                        className="px-2 py-1 rounded bg-[#800020] text-white"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, 1) }}
-                      className="px-3 py-1 rounded bg-[#800020] text-white text-sm"
-                    >
-                      Add
-                    </button>
-                  )}
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(_, info) => { if (info.offset.y > 80) onClose() }}
+              className="relative w-full bg-[#330225] border-t border-[#8a0030]/70 rounded-t-3xl p-4 pt-2 shadow-[0_-12px_50px_rgba(0,0,0,0.6)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Handle */}
+              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/25" />
+
+              <div className="flex items-start gap-3">
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg border border-[#8a0030]/50" />
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold text-base leading-tight">{item.name}</h3>
+                  <p className="text-xs text-gray-300 line-clamp-2">{item.description}</p>
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+                <button
+                  aria-label="Close"
+                  onClick={onClose}
+                  className="p-1.5 rounded-full bg-[#8a0030] text-white shrink-0 hover:bg-[#a00038] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="mt-3">
+                <p className="text-xs text-gray-300 mb-2">Choose an option</p>
+                <div className="max-h-[52vh] overflow-y-auto pr-1 space-y-2">
+                  {variants.map(v => {
+                    const composed = {
+                      ...item,
+                      id: `${item.menuID}:${v.name}`,
+                      name: `${item.name} - ${v.name}`,
+                      price: v.price,
+                    }
+                    const qty = cart?.[composed.id] || 0
+                    return (
+                      <div key={composed.id} className="flex items-center justify-between bg-[#4a0438] border border-[#8a0030]/60 rounded-xl p-2.5">
+                        <div>
+                          <p className="text-sm text-white font-medium leading-tight">{v.name}</p>
+                          <p className="text-xs text-[#FFFAFA]">₹{(v.price || 0).toFixed(2)}</p>
+                        </div>
+                        {qty > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, Math.max(0, qty - 1)) }}
+                              className="px-2.5 py-1.5 rounded-lg bg-[#8a0030] text-white active:scale-95 transition"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="text-white text-sm w-6 text-center">{qty}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, qty + 1) }}
+                              className="px-2.5 py-1.5 rounded-lg bg-[#8a0030] text-white active:scale-95 transition"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onQuantityChange(composed, 1) }}
+                            className="px-3 py-1.5 rounded-lg bg-[#8a0030] text-white text-sm active:scale-95 transition"
+                          >
+                            Add
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -135,7 +170,13 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
   return (
     <div className="py-0.5 block md:hidden cursor-pointer">
       <div 
-        onClick={() => setIsExpanded(!isExpanded)} 
+        onClick={() => {
+          if (Array.isArray(item.variants) && item.variants.length > 0) {
+            setIsSheetOpen(true)
+          } else {
+            setIsExpanded(!isExpanded)
+          }
+        }} 
         className="relative flex items-center gap-2 bg-[#510400] rounded-lg p-2 border border-[#800020]"
       >
         {item.isSpecialItem && (
@@ -182,7 +223,7 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
         ) : (
           <button
             onClick={(e) => { e.stopPropagation(); setIsSheetOpen(true) }}
-            className="px-2 py-1 rounded-full bg-[#800020] text-white text-xs"
+            className="px-2 py-1 rounded-full bg-[#800020] text-white text-xs shadow hover:shadow-md active:scale-95 transition"
           >
             Add
             {variantTotalQty > 0 && (
@@ -319,11 +360,7 @@ export default function MenuItems({ activeCategory, onCategoryChange, cart, onQu
 
             {activeCategory === "All" && index === Math.floor(filteredItems.length / 2) && (
               <div className="w-full my-4">
-                <img
-                  src="/Advertisment.jpg"
-                  alt="Advertisement"
-                  className="w-full h-15 md:h-40 object-cover rounded-lg shadow-lg"
-                />
+                <BannerMedia placement="menu" />
               </div>
             )}
           </div>

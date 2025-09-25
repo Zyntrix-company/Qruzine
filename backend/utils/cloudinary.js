@@ -13,7 +13,7 @@ cloudinary.config({
 const config = cloudinary.config();
 // console.log('Cloudinary configured with cloud_name:', config.cloud_name ? 'SET' : 'NOT SET');
 
-// Configure multer storage for Cloudinary
+// Configure multer storage for Cloudinary (images for menu items)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -23,6 +23,31 @@ const storage = new CloudinaryStorage({
       { width: 800, height: 600, crop: 'fill', quality: 'auto' },
       { fetch_format: 'auto' }
     ],
+    resource_type: 'image',
+  },
+});
+
+// Separate storage for banners (images)
+const bannerImageStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'qruzine-banners',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 1600, height: 400, crop: 'fill', quality: 'auto' },
+      { fetch_format: 'auto' }
+    ],
+    resource_type: 'image',
+  },
+});
+
+// Separate storage for banners (videos)
+const bannerVideoStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'qruzine-banners',
+    allowed_formats: ['mp4', 'webm', 'mov'],
+    resource_type: 'video',
   },
 });
 
@@ -40,8 +65,28 @@ const upload = multer({
   }
 });
 
-// Upload single image
+// Upload single image (menu items)
 const uploadSingle = upload.single('image');
+
+// Upload single banner image
+const uploadBannerImage = multer({
+  storage: bannerImageStorage,
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed!'), false);
+  },
+}).single('banner');
+
+// Upload single banner video
+const uploadBannerVideo = multer({
+  storage: bannerVideoStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) cb(null, true);
+    else cb(new Error('Only video files are allowed!'), false);
+  },
+}).single('banner');
 
 // Upload multiple images
 const uploadMultiple = upload.array('images', 5);
@@ -66,9 +111,12 @@ const extractPublicId = (url) => {
   const publicId = filename.split('.')[0];
   
   // Include folder path if present
-  const folderIndex = parts.indexOf('restaurant-menu');
-  if (folderIndex !== -1) {
-    return `restaurant-menu/${publicId}`;
+  const folders = ['restaurant-menu', 'qruzine-banners'];
+  for (const folder of folders) {
+    const idx = parts.indexOf(folder);
+    if (idx !== -1) {
+      return `${folder}/${publicId}`;
+    }
   }
   
   return publicId;
@@ -92,6 +140,8 @@ const getOptimizedUrl = (publicId, options = {}) => {
 module.exports = {
   cloudinary,
   uploadSingle,
+  uploadBannerImage,
+  uploadBannerVideo,
   uploadMultiple,
   deleteImage,
   extractPublicId,

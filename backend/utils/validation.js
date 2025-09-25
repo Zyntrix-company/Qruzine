@@ -54,6 +54,8 @@ const orderValidation = [
   body("customer.name").trim().notEmpty().withMessage("Customer name is required"),
   body("customer.phone").trim().notEmpty().withMessage("Customer phone is required"),
   body("customer.email").isEmail().withMessage("Valid email is required"),
+  body("customer.age").optional().isInt({ min: 1, max: 120 }).withMessage("Age must be between 1 and 120"),
+  body("customer.dob").optional().isISO8601().withMessage("DOB must be a valid date"),
   body("items").isArray({ min: 1 }).withMessage("At least one item is required"),
   body("items.*.menuID").notEmpty().withMessage("Menu ID is required for each item"),
   body("items.*.quantity").isInt({ min: 1 }).withMessage("Quantity must be at least 1"),

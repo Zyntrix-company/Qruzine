@@ -1,6 +1,7 @@
 "use client"
 
 import { Plus, Minus, Trash2, ShoppingBag, X } from "lucide-react"
+import BannerMedia from "../../../../../../components/BannerMedia"
 
 // Mobile Cart Row
 function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
@@ -152,6 +153,11 @@ export default function Cart({
                     <X className="h-6 w-6" />
                   </button>
                 </div>
+              </div>
+
+              {/* Banner */}
+              <div className="p-3 sm:p-4">
+                <BannerMedia placement="cart" />
               </div>
 
               {/* Body */}

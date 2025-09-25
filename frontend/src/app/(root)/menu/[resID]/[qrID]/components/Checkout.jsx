@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { CreditCard, User, Phone, CheckCircle, X, Mail } from "lucide-react"
+import { CreditCard, User, Phone, CheckCircle, X, Mail, Calendar, Gift } from "lucide-react"
 import api from '../../../../../../lib/api'
+import BannerMedia from "../../../../../../components/BannerMedia"
 
 export default function Checkout({ 
   isOpen, 
@@ -41,6 +42,8 @@ export default function Checkout({
           name: formData.name,
           phone: formData.phone,
           email: formData.email || "guest@example.com",
+          age: formData.age || undefined,
+          dob: formData.dob || undefined,
         },
         items: payloadItems,
         specialRequest: formData.specialInstructions || '',
@@ -58,6 +61,8 @@ export default function Checkout({
           name: payload.customer.name,
           phone: payload.customer.phone,
           email: payload.customer.email,
+          age: formData.age || undefined,
+          dob: formData.dob || undefined,
           specialInstructions: formData.specialInstructions || '',
         },
         items,
@@ -87,6 +92,10 @@ export default function Checkout({
             style={{ backgroundColor: '#510400', borderColor: '#B76E79' }}
           >
             <div className="p-6">
+              {/* Banner */}
+              <div className="mb-4">
+                <BannerMedia placement="checkout" />
+              </div>
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center" style={{ color: '#ffffff' }}>
@@ -143,7 +152,7 @@ export default function Checkout({
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: '#ffffff' }}>
                         <Mail className="h-4 w-4 inline mr-2" />
-                        Email
+                        Email (Optional)
                       </label>
                       <input
                         type="email"
@@ -156,6 +165,60 @@ export default function Checkout({
                           color: '#510400'
                         }}
                       />
+                    </div>
+                  </div>
+
+                  {/* Optional Birthday Offers Section */}
+                  <div
+                    className="mt-2 p-4 rounded-xl border-2"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(183,110,121,0.2) 0%, rgba(81,4,0,0.2) 100%)',
+                      borderColor: '#B76E79'
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Gift className="h-5 w-5" style={{ color: '#ffd1dc' }} />
+                      <h4 className="text-sm font-semibold" style={{ color: '#ffffff' }}>
+                        Need exciting offer coupons on birthdays? Enter these as well (optional)
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#ffffff' }}>
+                          Age (Optional)
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={formData.age || ''}
+                          onChange={(e) => setFormData({ ...formData, age: e.target.value ? Number(e.target.value) : '' })}
+                          className="w-full px-4 py-2 rounded-lg border-2"
+                          style={{
+                            backgroundColor: '#f5bfb3ff',
+                            borderColor: '#B76E79',
+                            color: '#510400'
+                          }}
+                          placeholder="Your age"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2" style={{ color: '#ffffff' }}>
+                          <Calendar className="h-4 w-4 inline mr-2" />
+                          Date of Birth (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.dob || ''}
+                          onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                          className="w-full px-4 py-2 rounded-lg border-2"
+                          style={{
+                            backgroundColor: '#f5bfb3ff',
+                            borderColor: '#B76E79',
+                            color: '#510400'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 

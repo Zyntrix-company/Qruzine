@@ -28,6 +28,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     ref: "Restaurant",
   },
+  age: {
+    type: Number,
+    min: 1,
+    max: 120,
+  },
+  dob: {
+    type: Date,
+  },
   orderCount: {
     type: Number,
     default: 1,

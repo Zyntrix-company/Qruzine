@@ -253,6 +253,24 @@ class ApiService {
     return response.data;
   }
 
+  // Banner API methods
+  async getBanner(placement = 'all') {
+    const response = await this.instance.get(`/banner`, { params: { placement } });
+    return response.data?.data || null;
+  }
+
+  async uploadBanner({ file, placement = 'all', isActive = true, title = '' }) {
+    const form = new FormData();
+    form.append('banner', file);
+    form.append('placement', placement);
+    form.append('isActive', String(isActive));
+    form.append('title', title);
+    const response = await this.instance.post('/banner', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+
   // Location API methods
   async getStates() {
     const response = await this.instance.get('/admin/location/states');

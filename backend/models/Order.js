@@ -63,6 +63,14 @@ const orderSchema = new mongoose.Schema({
       trim: true,
       lowercase: true,
     },
+    age: {
+      type: Number,
+      min: 1,
+      max: 120,
+    },
+    dob: {
+      type: Date,
+    },
   },
   items: [orderItemSchema],
   totalAmount: {

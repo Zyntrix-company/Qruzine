@@ -12,40 +12,24 @@ const app = express()
 // Security middleware
 app.use(helmet())
 
-// CORS configuration - allow only exact FRONTEND_URL from env
-const allowedOrigin = process.env.FRONTEND_URL
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!allowedOrigin) {
-      return callback(new Error('CORS misconfiguration: FRONTEND_URL is not set'), false)
-    }
-    if (origin === allowedOrigin) {
-      return callback(null, true)
-    }
-    return callback(new Error(`CORS blocked for origin: ${origin}`), false)
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: [
-    'Origin',
-    'X-Requested-With', 
-    'Content-Type', 
-    'Accept',
-    'Authorization',
-    'Cache-Control'
-  ]
-}
+// ---- CORS Setup (simplified) ----
+const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, "") // strip trailing slash
+const allowedOrigins = frontendUrl ? [frontendUrl] : []
 
-app.use(cors(corsOptions))
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+)
 
-// Handle preflight requests for all routes
-app.options('*', cors(corsOptions))
+// Handle preflight requests
+app.options("*", cors({ origin: allowedOrigins, credentials: true }))
 
-// Rate limiting
+// ---- Rate limiting ----
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
 })
 app.use(limiter)
 
@@ -53,7 +37,7 @@ app.use(limiter)
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true }))
 
-// MongoDB connection
+// ---- MongoDB connection ----
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/restaurant-ordering", {
     useNewUrlParser: true,
@@ -62,7 +46,7 @@ mongoose
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err))
 
-// Routes
+// ---- Routes ----
 app.use("/api/auth", require("./routes/auth"))
 app.use("/api/admin", require("./routes/admin"))
 app.use("/api/subadmin", require("./routes/subadmin"))
@@ -71,6 +55,7 @@ app.use("/api/categories", require("./routes/categories"))
 app.use("/api/upload", require("./routes/upload"))
 app.use("/api/orders", require("./routes/orders"))
 app.use("/api/qr", require("./routes/qr"))
+app.use("/api/banner", require("./routes/banner"))
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -81,7 +66,7 @@ app.get("/api/health", (req, res) => {
   })
 })
 
-// Integrations health endpoint (email + WhatsApp)
+// Integrations health endpoint
 app.get("/api/health/integrations", async (req, res) => {
   try {
     const emailStatus = await verifyEmailConfig()
@@ -110,22 +95,23 @@ app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" })
 })
 
+// ---- Server Startup ----
 const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
-  console.log('[Startup] CORS allowed exact origins:', exactOrigins)
-  console.log('[Startup] CORS allowed wildcard hosts:', wildcardHosts)
-  // Startup integration checks (non-fatal)
-  verifyEmailConfig().then((status) => {
-    if (status.configured) {
-      console.log("[Startup] Email transport verified: OK")
-    } else {
-      console.warn("[Startup] Email transport NOT configured:", status.error)
-    }
-  }).catch((e) => console.warn("[Startup] Email verify threw:", e?.message || e))
+  console.log("[Startup] CORS allowed origins:", allowedOrigins)
+  verifyEmailConfig()
+    .then((status) => {
+      if (status.configured) {
+        console.log("[Startup] Email transport verified: OK")
+      } else {
+        console.warn("[Startup] Email transport NOT configured:", status.error)
+      }
+    })
+    .catch((e) => console.warn("[Startup] Email verify threw:", e?.message || e))
 
   const waConfigured = isWhatsAppConfigured()
-  console.log(`[Startup] WhatsApp (Twilio) configured: ${waConfigured ? 'YES' : 'NO'}`)
+  console.log(`[Startup] WhatsApp (Twilio) configured: ${waConfigured ? "YES" : "NO"}`)
 })
 
 module.exports = app

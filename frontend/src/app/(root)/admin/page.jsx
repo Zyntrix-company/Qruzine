@@ -12,6 +12,7 @@ import RestaurantTable from '../../../components/admin/RestaurantTable';
 import AddRestaurantModal from '../../../components/admin/AddRestaurantModal';
 import CouponModal from '../../../components/admin/CouponModal';
 import BugsModal from '../../../components/admin/BugsModal';
+import BannerManager from '../../../components/admin/BannerManager';
 
 // Toast Component
 const Toast = ({ toast, onClose }) => {
@@ -47,7 +48,7 @@ const Toast = ({ toast, onClose }) => {
       {getIcon()}
       <div className="flex-1">
         {toast.title && <div className="font-medium">{toast.title}</div>}
-        <div className={toast.title ? "text-sm" : ""}>{toast.message}</div>
+        <div className={toast.title ? "text-medium" : ""}>{toast.message}</div>
       </div>
       <button
         onClick={() => onClose(toast.id)}
@@ -528,6 +529,9 @@ const AdminDashboard = () => {
           onPageChange={setCurrentPage}
           onSendCredentialsEmail={handleSendCredentialsEmail}
         />
+
+        {/* Banner Manager Section */}
+        <BannerManager />
 
         {/* Modals */}
         <AddRestaurantModal

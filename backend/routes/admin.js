@@ -525,8 +525,8 @@ router.get("/restaurants/:resID/export", authenticateSuperAdmin, async (req, res
       })
     }
 
-    // Get user data (only name, phone, location as specified)
-    const users = await User.find({ resID }).select("name phone email location orderCount lastOrderDate")
+    // Get user data including optional age and dob
+    const users = await User.find({ resID }).select("name phone email age dob location orderCount lastOrderDate")
 
     if (users.length === 0) {
       return res.status(404).json({
@@ -543,13 +543,27 @@ router.get("/restaurants/:resID/export", authenticateSuperAdmin, async (req, res
           { id: "name", title: "Name" },
           { id: "phone", title: "Phone Number" },
           { id: "email", title: "Email" },
+          { id: "age", title: "Age" },
+          { id: "dob", title: "Date of Birth" },
           { id: "location", title: "Location" },
           { id: "orderCount", title: "Total Orders" },
           { id: "lastOrderDate", title: "Last Order Date" },
         ],
       })
 
-      await csvWriter.writeRecords(users)
+      // Map users to plain objects and light date formatting for dob/lastOrderDate
+      const rows = users.map(u => ({
+        name: u.name,
+        phone: u.phone,
+        email: u.email,
+        age: u.age ?? "",
+        dob: u.dob ? new Date(u.dob).toLocaleDateString() : "",
+        location: u.location,
+        orderCount: u.orderCount,
+        lastOrderDate: u.lastOrderDate ? new Date(u.lastOrderDate).toLocaleDateString() : "",
+      }))
+
+      await csvWriter.writeRecords(rows)
 
       const csvPath = path.join(os.tmpdir(), `restaurant_${resID}_users.csv`)
       res.download(csvPath, `${restaurant.name}_users.csv`, (err) => {

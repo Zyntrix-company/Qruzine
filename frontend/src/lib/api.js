@@ -286,6 +286,12 @@ class ApiService {
     return this.request(`/admin/restaurants?page=${page}&limit=${limit}`, 'GET');
   }
 
+  // Public Banner API
+  async getBanner(placement = 'all') {
+    const qp = placement ? `?placement=${encodeURIComponent(placement)}` : '';
+    return this.get(`/banner${qp}`);
+  }
+
   async getRestaurantById(resID) {
     return this.request(`/admin/restaurants/${resID}`, 'GET');
   }

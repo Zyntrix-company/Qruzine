@@ -130,20 +130,31 @@ router.post("/place", orderValidation, async (req, res) => {
     await order.save()
 
     // Store/update user data for super admin export
-    const existingUser = await User.findOne({ email: customer.email, resID })
+    const isGuestEmail = !customer.email || customer.email.toLowerCase() === "guest@example.com"
+    const userQuery = isGuestEmail
+      ? { phone: customer.phone, resID }
+      : { email: customer.email, resID }
+    const existingUser = await User.findOne(userQuery)
     if (existingUser) {
       existingUser.orderCount += 1
       existingUser.lastOrderDate = new Date()
       existingUser.location = qrCode.type // Update location to latest QR location
+      // Persist optional birthday-related fields if provided
+      if (customer.age !== undefined) existingUser.age = customer.age
+      if (customer.dob) existingUser.dob = customer.dob
+      // If previously stored via phone and we now have a real email, set it
+      if (!isGuestEmail && !existingUser.email) existingUser.email = customer.email
       await existingUser.save()
     } else {
       const newUser = new User({
         name: customer.name,
         phone: customer.phone,
-        email: customer.email,
+        email: isGuestEmail ? undefined : customer.email,
         location: qrCode.type,
         resID,
         orderCount: 1,
+        age: customer.age,
+        dob: customer.dob,
       })
       await newUser.save()
     }

@@ -11,6 +11,8 @@ const exportUserDataToCSV = async (users, restaurantName, filePath) => {
         { id: "name", title: "Customer Name" },
         { id: "phone", title: "Phone Number" },
         { id: "email", title: "Email Address" },
+        { id: "age", title: "Age" },
+        { id: "dob", title: "Date of Birth" },
         { id: "location", title: "Table/Room Location" },
         { id: "orderCount", title: "Total Orders" },
         { id: "lastOrderDate", title: "Last Order Date" },
@@ -21,6 +23,8 @@ const exportUserDataToCSV = async (users, restaurantName, filePath) => {
     // Format data for CSV
     const formattedData = users.map((user) => ({
       ...user.toObject(),
+      age: user.age ?? "",
+      dob: user.dob ? new Date(user.dob).toLocaleDateString() : "",
       lastOrderDate: user.lastOrderDate ? user.lastOrderDate.toLocaleDateString() : "N/A",
       createdAt: user.createdAt ? user.createdAt.toLocaleDateString() : "N/A",
     }))
@@ -43,6 +47,8 @@ const exportOrdersToCSV = async (orders, restaurantName, filePath) => {
         { id: "customerName", title: "Customer Name" },
         { id: "customerPhone", title: "Phone" },
         { id: "customerEmail", title: "Email" },
+        { id: "customerAge", title: "Age" },
+        { id: "customerDOB", title: "Date of Birth" },
         { id: "qrID", title: "Table/Room" },
         { id: "totalAmount", title: "Total Amount (₹)" },
         { id: "status", title: "Status" },
@@ -59,6 +65,8 @@ const exportOrdersToCSV = async (orders, restaurantName, filePath) => {
       customerName: order.customer.name,
       customerPhone: order.customer.phone,
       customerEmail: order.customer.email,
+      customerAge: order.customer.age ?? "",
+      customerDOB: order.customer.dob ? new Date(order.customer.dob).toLocaleDateString() : "",
       qrID: order.qrID,
       totalAmount: order.totalAmount,
       status: order.status,
