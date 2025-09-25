@@ -164,6 +164,7 @@ function VariantControls({ parent, variant, quantity, onChange }) {
 function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [burstKey, setBurstKey] = useState(0)
   const lowestPrice = getLowestAvailablePrice(item)
   const variantTotalQty = getVariantTotalQty(cart, item)
 
@@ -205,23 +206,26 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
                 <Minus className="w-3 h-3" />
               </button>
               <span className="text-sm text-white w-5 text-center">{quantity}</span>
-              <button 
-                onClick={(e) => { e.stopPropagation(); onQuantityChange(item, quantity + 1) }} 
+              <motion.button 
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => { e.stopPropagation(); onQuantityChange(item, quantity + 1); setBurstKey(k => k + 1) }} 
                 className="p-1 rounded bg-[#800020] text-white"
               >
                 <Plus className="w-3 h-3" />
-              </button>
+              </motion.button>
             </div>
           ) : (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onQuantityChange(item, 1) }} 
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={(e) => { e.stopPropagation(); onQuantityChange(item, 1); setBurstKey(k => k + 1) }} 
               className="p-1 rounded-full bg-[#800020] text-white flex items-center justify-center"
             >
               <Plus className="w-4 h-4" />
-            </button>
+            </motion.button>
           )
         ) : (
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             onClick={(e) => { e.stopPropagation(); setIsSheetOpen(true) }}
             className="px-2 py-1 rounded-full bg-[#800020] text-white text-xs shadow hover:shadow-md active:scale-95 transition"
           >
@@ -229,8 +233,25 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
             {variantTotalQty > 0 && (
               <span className="ml-1 inline-flex items-center justify-center min-w-4 px-1 h-4 text-[10px] bg-white text-[#800020] rounded-full">{variantTotalQty}</span>
             )}
-          </button>
+          </motion.button>
         )}
+
+        {/* +1 burst animation */}
+        <AnimatePresence>
+          {burstKey > 0 && (
+            <motion.span
+              key={burstKey}
+              initial={{ opacity: 0, y: 0, scale: 0.9 }}
+              animate={{ opacity: 1, y: -22, scale: 1 }}
+              exit={{ opacity: 0, y: -40, scale: 0.95 }}
+              transition={{ duration: 0.6 }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#800020] text-white text-xs px-2 py-0.5 rounded-full shadow"
+              onAnimationComplete={() => setBurstKey(0)}
+            >
+              +1
+            </motion.span>
+          )}
+        </AnimatePresence>
       </div>
 
       {isExpanded && (
@@ -261,6 +282,7 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
         onQuantityChange={(composed, q) => {
           onQuantityChange(composed, q)
           // Keep the sheet open so users can add multiple; close when first add? Up to UX. We'll keep open.
+          if (q > 0) setBurstKey(k => k + 1)
         }}
       />
     </div>
@@ -268,6 +290,7 @@ function MobileMenuItem({ item, quantity, onQuantityChange, cart }) {
 }
 
 function DesktopMenuItem({ item, quantity, onQuantityChange, cart }) {
+  const [burstKey, setBurstKey] = useState(0)
   return (
     <div className="py-0.5 hidden md:flex flex-col rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border bg-[#510400] border-[#800020] cursor-pointer relative">
       {item.isSpecialItem && (
@@ -289,14 +312,14 @@ function DesktopMenuItem({ item, quantity, onQuantityChange, cart }) {
                 <Minus className="w-4 h-4" />
               </button>
               <span className="text-white font-bold">{quantity}</span>
-              <button onClick={() => onQuantityChange(item, quantity + 1)} className="p-1 rounded bg-[#800020] text-white">
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onQuantityChange(item, quantity + 1); setBurstKey(k => k + 1) }} className="p-1 rounded bg-[#800020] text-white">
                 <Plus className="w-4 h-4" />
-              </button>
+              </motion.button>
             </div>
           ) : (
-            <button onClick={() => onQuantityChange(item, 1)} className="p-2 rounded-full bg-[#800020] text-white flex items-center justify-center">
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => { onQuantityChange(item, 1); setBurstKey(k => k + 1) }} className="p-2 rounded-full bg-[#800020] text-white flex items-center justify-center">
               <Plus className="w-4 h-4" />
-            </button>
+            </motion.button>
           ))}
         </div>
         {Array.isArray(item.variants) && item.variants.length > 0 && (
@@ -313,6 +336,22 @@ function DesktopMenuItem({ item, quantity, onQuantityChange, cart }) {
           </div>
         )}
       </div>
+      {/* +1 burst animation */}
+      <AnimatePresence>
+        {burstKey > 0 && (
+          <motion.span
+            key={burstKey}
+            initial={{ opacity: 0, y: 0, scale: 0.9 }}
+            animate={{ opacity: 1, y: -22, scale: 1 }}
+            exit={{ opacity: 0, y: -40, scale: 0.95 }}
+            transition={{ duration: 0.6 }}
+            className="absolute right-3 top-3 bg-[#800020] text-white text-xs px-2 py-0.5 rounded-full shadow"
+            onAnimationComplete={() => setBurstKey(0)}
+          >
+            +1
+          </motion.span>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

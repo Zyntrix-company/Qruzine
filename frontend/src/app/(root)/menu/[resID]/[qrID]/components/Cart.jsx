@@ -8,7 +8,7 @@ function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
   return (
     <div 
         className="flex items-center gap-2 py-2 px-2 rounded-md mb-2"
-      style={{ backgroundColor: '#510400', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #B76E79' }}
+      style={{ backgroundColor: '#510400', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #800020' }}
     >
       {/* Image (20% width) */}
       <img
@@ -20,7 +20,7 @@ function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
       {/* Name + Price */}
       <div className="flex-1">
         <h3 className="text-sm font-semibold text-white leading-tight">{item.name}</h3>
-        <p className="text-xs font-bold" style={{ color: '#E7B2A4' }}>
+        <p className="text-xs font-bold" style={{ color: '#FFFAFA' }}>
           ${item.price.toFixed(2)}
         </p>
       </div>
@@ -29,14 +29,14 @@ function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
       <div className="flex items-center gap-1">
         <button
           onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
-          className="p-1 rounded bg-[#E7B2A4] text-black"
+          className="p-1 rounded bg-[#800020] text-white"
         >
           <Minus className="w-3 h-3" />
         </button>
         <span className="text-sm text-white w-5 text-center">{item.quantity}</span>
         <button
           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-          className="p-1 rounded bg-[#E7B2A4] text-black"
+          className="p-1 rounded bg-[#800020] text-white"
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -49,7 +49,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
   return (
     <div 
         className="flex items-start space-x-4 p-4 rounded-xl border transition-all hidden sm:flex mb-2"
-      style={{ backgroundColor: '#510400', borderColor: '#E7B2A4' }}  >
+      style={{ backgroundColor: '#510400', borderColor: '#800020' }}  >
       <div className="relative">
         <img
           src={item.image}
@@ -58,7 +58,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
         />
         <div 
           className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" 
-          style={{ backgroundColor: '#E7B2A4', color: 'rgb(15, 18, 15)' }}
+          style={{ backgroundColor: '#ffffff', color: '#800020' }}
         >
           {item.quantity}
         </div>
@@ -67,10 +67,10 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
           <div>
-            <h4 className="font-semibold text-sm mb-1" style={{ color: '#E7B2A4' }}>{item.name}</h4>
+            <h4 className="font-semibold text-sm mb-1" style={{ color: '#FFFAFA' }}>{item.name}</h4>
             <p className="text-sm text-gray-300 mb-2">{item.description}</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold" style={{ color: '#E7B2A4' }}>${item.price.toFixed(2)}</span>
+              <span className="text-sm font-bold" style={{ color: '#FFFAFA' }}>${item.price.toFixed(2)}</span>
               <span className="text-sm text-gray-400">each</span>
             </div>
           </div>
@@ -133,23 +133,23 @@ export default function Cart({
     <>
       {isOpen && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
           <div className="absolute right-0 top-0 h-full w-full max-w-lg border-l-2" 
-            style={{ backgroundColor: 'rgb(15, 18, 15)', borderColor: '#E7B2A4' }}>
+            style={{ backgroundColor: 'rgb(15, 18, 15)', borderColor: '#800020' }}>
             
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="border-b p-4 sm:p-6" style={{ borderColor: 'rgba(212, 175, 55, 0.3)' }}>
+              <div className="border-b p-4 sm:p-6" style={{ borderColor: 'rgba(128, 0, 32, 0.4)' }}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center" style={{ color: '#E7B2A4' }}>
+                  <div className="flex items-center" style={{ color: '#FFFAFA' }}>
                     <ShoppingBag className="h-5 w-5 mr-2" />
                     <h2 className="text-sm font-bold">Your Order</h2>
                     <span className="ml-1 px-1 py-1 rounded-full text-xs font-sm" 
-                      style={{ backgroundColor: '#E7B2A4', color: 'rgb(15, 18, 15)' }}>
+                      style={{ backgroundColor: '#ffffff', color: '#800020' }}>
                       {totalItems} items
                     </span>
                   </div>
-                  <button onClick={onClose} className="p-2" style={{ color: '#E7B2A4' }}>
+                  <button onClick={onClose} className="p-2" style={{ color: '#FFFAFA' }}>
                     <X className="h-6 w-6" />
                   </button>
                 </div>
@@ -164,7 +164,7 @@ export default function Cart({
               {items.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <ShoppingBag className="h-10 w-10 mx-auto mb-2" style={{ color: '#E7B2A4' }} />
+                    <ShoppingBag className="h-10 w-10 mx-auto mb-2" style={{ color: '#FFFAFA' }} />
                     <h3 className="text-sm font-semibold mb-2" style={{ color: '#a4a2a2ff' }}>Your cart is empty</h3>
                     <p className="text-[#a4a2a2ff]">Add some delicious items to get started!</p>
                   </div>
@@ -199,7 +199,7 @@ export default function Cart({
 
                   {/* Footer */}
                   <div className="border-t p-3 sm:p-4 space-y-2 sm:space-y-3" 
-                    style={{ borderColor: '#E7B2A4', backgroundColor: 'rgba(7, 6, 2, 0.08)' }}>
+                    style={{ borderColor: '#800020', backgroundColor: 'rgba(7, 6, 2, 0.08)' }}>
                     
                     <div className="space-y-2 sm:space-y-2 text-sm sm:text-sm">
                       <div className="flex justify-between">
@@ -220,7 +220,7 @@ export default function Cart({
                     <button
                       onClick={onCheckout}
                       className="w-full py-2 sm:py-4 px-3 rounded-sm font-bold text-sm sm:text-sm transition-all hover:scale-[1.02]"
-                      style={{ backgroundColor: '#E7B2A4', color: 'rgba(255, 255, 255, 1)' }}
+                      style={{ backgroundColor: '#800020', color: '#ffffff' }}
                     >
                       Proceed to Checkout → ${total.toFixed(2)}
                     </button>

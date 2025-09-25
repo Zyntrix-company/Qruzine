@@ -83,13 +83,12 @@ export default function Checkout({
   const isFormValid = formData.name && formData.phone
 
   return (
-    <>
-      {isOpen && (
+    isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
+          <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
           <div 
-            className="relative rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2" 
-            style={{ backgroundColor: '#510400', borderColor: '#B76E79' }}
+            className="relative rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 shadow-2xl" 
+            style={{ backgroundColor: '#1a0b12', borderColor: '#800020' }}
           >
             <div className="p-6">
               {/* Banner */}
@@ -122,15 +121,10 @@ export default function Checkout({
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg border-2"
-                        style={{ 
-                          backgroundColor: '#f5bfb3ff', 
-                          borderColor: '#B76E79',
-                          color: '#510400'
-                        }}
+                        className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                        style={{ borderColor: '#800020' }}
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium mb-2" style={{ color: '#ffffff' }}>
                         <Phone className="h-4 w-4 inline mr-2" />
@@ -141,12 +135,8 @@ export default function Checkout({
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg border-2"
-                        style={{ 
-                          backgroundColor: '#f5bfb3ff', 
-                          borderColor: '#B76E79',
-                          color: '#510400'
-                        }}
+                        className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                        style={{ borderColor: '#800020' }}
                       />
                     </div>
                     <div>
@@ -157,27 +147,20 @@ export default function Checkout({
                       <input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        className="w-full px-4 py-2 rounded-lg border-2"
-                        style={{ 
-                          backgroundColor: '#f5bfb3ff', 
-                          borderColor: '#B76E79',
-                          color: '#510400'
-                        }}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                        style={{ borderColor: '#800020' }}
                       />
                     </div>
                   </div>
 
                   {/* Optional Birthday Offers Section */}
                   <div
-                    className="mt-2 p-4 rounded-xl border-2"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(183,110,121,0.2) 0%, rgba(81,4,0,0.2) 100%)',
-                      borderColor: '#B76E79'
-                    }}
+                    className="mt-2 p-4 rounded-xl border-2 bg-black/40"
+                    style={{ borderColor: '#800020' }}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <Gift className="h-5 w-5" style={{ color: '#ffd1dc' }} />
+                      <Gift className="h-5 w-5 text-white" />
                       <h4 className="text-sm font-semibold" style={{ color: '#ffffff' }}>
                         Need exciting offer coupons on birthdays? Enter these as well (optional)
                       </h4>
@@ -193,12 +176,8 @@ export default function Checkout({
                           max={120}
                           value={formData.age || ''}
                           onChange={(e) => setFormData({ ...formData, age: e.target.value ? Number(e.target.value) : '' })}
-                          className="w-full px-4 py-2 rounded-lg border-2"
-                          style={{
-                            backgroundColor: '#f5bfb3ff',
-                            borderColor: '#B76E79',
-                            color: '#510400'
-                          }}
+                          className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                          style={{ borderColor: '#800020' }}
                           placeholder="Your age"
                         />
                       </div>
@@ -211,12 +190,8 @@ export default function Checkout({
                           type="date"
                           value={formData.dob || ''}
                           onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                          className="w-full px-4 py-2 rounded-lg border-2"
-                          style={{
-                            backgroundColor: '#f5bfb3ff',
-                            borderColor: '#B76E79',
-                            color: '#510400'
-                          }}
+                          className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                          style={{ borderColor: '#800020' }}
                         />
                       </div>
                     </div>
@@ -230,18 +205,14 @@ export default function Checkout({
                       value={formData.specialInstructions}
                       onChange={(e) => setFormData({...formData, specialInstructions: e.target.value})}
                       rows={3}
-                      className="w-full px-4 py-2 rounded-lg border-2"
-                      style={{ 
-                        backgroundColor: '#f5bfb3ff', 
-                        borderColor: '#B76E79',
-                        color: '#510400'
-                      }}
+                      className="w-full px-4 py-2 rounded-lg border-2 bg-black/60 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-[#800020]"
+                      style={{ borderColor: '#800020' }}
                       placeholder="Any special requests or dietary requirements..."
                     />
                   </div>
                 </div>
 
-                <hr style={{ borderColor: '#bd8b93ff' }} />
+                <hr style={{ borderColor: '#3b0f1a' }} />
 
                 {/* Order Summary */}
                 <div className="space-y-4">
@@ -250,11 +221,11 @@ export default function Checkout({
                     {items.map(item => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <span style={{ color: '#ffffff' }}>{item.quantity}x {item.name}</span>
-                        <span style={{ color: '#fdfdfdff' }}>${(item.price * item.quantity).toFixed(2)}</span>
+                        <span style={{ color: '#fdfdfd' }}>${(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
-                  <hr style={{ borderColor: '#bd8b93ff' }} />
+                  <hr style={{ borderColor: '#3b0f1a' }} />
                   <div className="flex justify-between text-lg font-bold">
                     <span style={{ color: '#ffffff' }}>Total</span>
                     <span style={{ color: '#ffffff' }}>${total.toFixed(2)}</span>
@@ -266,16 +237,16 @@ export default function Checkout({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 py-3 px-6 rounded-lg border-2 font-medium transition-colors"
-                    style={{ borderColor: '#B76E79', color: '#ffffff', backgroundColor: 'transparent' }}
+                    className="flex-1 py-3 px-6 rounded-lg border-2 font-medium transition-colors hover:bg-[#800020]/10"
+                    style={{ borderColor: '#800020', color: '#ffffff', backgroundColor: 'transparent' }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!isFormValid || submitting}
-                    className="flex-1 py-3 px-6 rounded-lg border-2 font-medium transition-colors disabled:opacity-60"
-                    style={{ borderColor: '#B76E79', color: '#ffffff', backgroundColor: 'transparent' }}
+                    className="flex-1 py-3 px-6 rounded-lg border-2 font-medium transition-colors disabled:opacity-60 hover:bg-[#800020]/10"
+                    style={{ borderColor: '#800020', color: '#ffffff', backgroundColor: 'transparent' }}
                   >
                     <CheckCircle className="h-4 w-4 inline mr-2" />
                     {submitting ? 'Placing...' : 'Place Order'}
@@ -285,7 +256,6 @@ export default function Checkout({
             </div>
           </div>
         </div>
-      )}
-    </>
+      ) : null
   )
 }
