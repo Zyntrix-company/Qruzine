@@ -41,7 +41,7 @@ const restaurantSchema = new mongoose.Schema({
   },
   businessType: {
     type: String,
-    enum: ["Restaurant", "Hotel","Cafe", "Other"],
+    enum: ["Restaurant", "Hotel","Cafe","Fast Food","Fine Dining","Bar","Food Truck","Other"],
     required: true,
   },
   gstNumber: {
