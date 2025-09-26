@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ShoppingCart } from "lucide-react"
 
 // Header with optional logo image on the left + restaurant name, and only cart icon on the right.
@@ -21,14 +22,19 @@ export default function Header({ cartItemsCount = 0, onCartClick, restaurantName
           {/* Left: Logo + Name */}
           <div className="flex items-center gap-3 min-w-0">
             {effectiveLogoUrl ? (
-              <img
-                src={effectiveLogoUrl}
-                alt={`${restaurantName} logo`}
-                className="h-10 w-10 rounded-md object-cover ring-1"
+              <div 
+                className="h-10 w-10 relative ring-1 rounded-md"
                 style={{ ringColor: 'rgba(212, 175, 55, 0.4)' }}
-                loading="eager"
-                decoding="async"
-              />
+              >
+                <Image
+                  src={effectiveLogoUrl}
+                  alt={`${restaurantName} logo`}
+                  fill
+                  className="rounded-md object-cover"
+                  sizes="40px"
+                  priority
+                />
+              </div>
             ) : (
               <div
                 className="h-10 w-10 rounded-md flex items-center justify-center text-xl font-bold"

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Plus, Minus, Trash2, ShoppingBag, X } from "lucide-react"
 import BannerMedia from "../../../../../../components/BannerMedia"
 
@@ -7,21 +8,25 @@ import BannerMedia from "../../../../../../components/BannerMedia"
 function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
   return (
     <div 
-        className="flex items-center gap-2 py-2 px-2 rounded-md mb-2"
+      className="flex items-center gap-2 py-2 px-2 rounded-md mb-2"
       style={{ backgroundColor: '#510400', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', border: '1px solid #800020' }}
     >
       {/* Image (20% width) */}
-      <img
-        src={item.image}
-        alt={item.name}
-        className="w-14 h-14 object-cover rounded-md flex-shrink-0"
-      />
+      <div className="w-14 h-14 flex-shrink-0 relative">
+        <Image
+          src={item.image}
+          alt={item.name}
+          fill
+          className="object-cover rounded-md"
+          sizes="56px"
+        />
+      </div>
 
       {/* Name + Price */}
       <div className="flex-1">
         <h3 className="text-sm font-semibold text-white leading-tight">{item.name}</h3>
         <p className="text-xs font-bold" style={{ color: '#FFFAFA' }}>
-          ${item.price.toFixed(2)}
+          ₹{item.price.toFixed(2)}
         </p>
       </div>
 
@@ -30,6 +35,7 @@ function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
         <button
           onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
           className="p-1 rounded bg-[#800020] text-white"
+          aria-label={`Decrease ${item.name} quantity`}
         >
           <Minus className="w-3 h-3" />
         </button>
@@ -37,6 +43,7 @@ function MobileCartItem({ item, onUpdateQuantity, onRemove }) {
         <button
           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
           className="p-1 rounded bg-[#800020] text-white"
+          aria-label={`Increase ${item.name} quantity`}
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -51,11 +58,15 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
         className="flex items-start space-x-4 p-4 rounded-xl border transition-all hidden sm:flex mb-2"
       style={{ backgroundColor: '#510400', borderColor: '#800020' }}  >
       <div className="relative">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="w-10 h-10 object-cover rounded-lg"
-        />
+        <div className="w-10 h-10 relative">
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            className="object-cover rounded-lg"
+            sizes="40px"
+          />
+        </div>
         <div 
           className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" 
           style={{ backgroundColor: '#ffffff', color: '#800020' }}
@@ -70,7 +81,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
             <h4 className="font-semibold text-sm mb-1" style={{ color: '#FFFAFA' }}>{item.name}</h4>
             <p className="text-sm text-gray-300 mb-2">{item.description}</p>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold" style={{ color: '#FFFAFA' }}>${item.price.toFixed(2)}</span>
+              <span className="text-sm font-bold" style={{ color: '#FFFAFA' }}>₹{item.price.toFixed(2)}</span>
               <span className="text-sm text-gray-400">each</span>
             </div>
           </div>
@@ -78,6 +89,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
           <button
             onClick={() => onRemove(item.id)}
             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-full transition-colors"
+            aria-label={`Remove ${item.name} from cart`}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -88,6 +100,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
             <button
               onClick={() => onUpdateQuantity(item.id, Math.max(0, item.quantity - 1))}
               className="w-8 h-8 rounded-md hover:bg-red-500/20 text-red-400 hover:text-red-300 flex items-center justify-center transition-colors"
+              aria-label={`Decrease ${item.name} quantity`}
             >
               <Minus className="h-4 w-4" />
             </button>
@@ -99,6 +112,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
             <button
               onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
               className="w-8 h-8 rounded-md hover:bg-green-500/20 text-green-400 hover:text-green-300 flex items-center justify-center transition-colors"
+              aria-label={`Increase ${item.name} quantity`}
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -106,7 +120,7 @@ function DesktopCartItem({ item, onUpdateQuantity, onRemove }) {
 
           <div className="text-right">
             <div className="text-lg font-bold" style={{ color: '#E7B2A4' }}>
-              ${(item.price * item.quantity).toFixed(2)}
+            ₹{(item.price * item.quantity).toFixed(2)}
             </div>
             <div className="text-xs text-gray-400">total</div>
           </div>
@@ -204,16 +218,16 @@ export default function Cart({
                     <div className="space-y-2 sm:space-y-2 text-sm sm:text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-300">Subtotal</span>
-                        <span style={{ color: '#ffffffff' }}>${subtotal.toFixed(2)}</span>
+                        <span style={{ color: '#ffffffff' }}>₹{subtotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-300">Tax (10%)</span>
-                        <span style={{ color: '#ffffffff' }}>${tax.toFixed(2)}</span>
+                        <span style={{ color: '#ffffffff' }}>₹{tax.toFixed(2)}</span>
                       </div>
                       <hr style={{ borderColor: 'rgba(212, 175, 55, 0.3)' }} />
                       <div className="flex justify-between text-xl sm:text-xl font-bold">
                         <span style={{ color: '#ffffffff' }}>Total</span>
-                        <span style={{ color: '#ffffffff' }}>${total.toFixed(2)}</span>
+                        <span style={{ color: '#ffffffff' }}>₹{total.toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -222,7 +236,7 @@ export default function Cart({
                       className="w-full py-2 sm:py-4 px-3 rounded-sm font-bold text-sm sm:text-sm transition-all hover:scale-[1.02]"
                       style={{ backgroundColor: '#800020', color: '#ffffff' }}
                     >
-                      Proceed to Checkout → ${total.toFixed(2)}
+                      Proceed to Checkout → ₹{total.toFixed(2)}
                     </button>
                   </div>
                 </>

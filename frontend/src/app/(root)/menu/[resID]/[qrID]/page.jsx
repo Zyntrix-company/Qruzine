@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import SplashScreen from '../../../../../components/splash_screen'
@@ -40,6 +41,8 @@ export default function Page() {
   const [menuItems, setMenuItems] = useState([])
   const [categories, setCategories] = useState(["All"]) 
   const [vegOnly, setVegOnly] = useState(false)
+  const [dietPreference, setDietPreference] = useState('all') // 'veg' | 'nonveg' | 'vegan' | 'all'
+  const [showPrefPrompt, setShowPrefPrompt] = useState(false)
 
   // Fetch public menu
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function Page() {
 
   // Persist cart to localStorage so refresh doesn't clear it
   const storageKey = useMemo(() => (resID && qrID ? `qr_cart_${resID}_${qrID}` : null), [resID, qrID])
+  const prefKey = useMemo(() => (resID && qrID ? `qr_pref_${resID}_${qrID}` : null), [resID, qrID])
 
   // Hydrate cart from localStorage when resID/qrID become available
   useEffect(() => {
@@ -108,6 +112,26 @@ export default function Page() {
       console.warn('Failed to load cart from storage', e)
     }
   }, [storageKey])
+
+  // Load saved diet preference and show the prompt on each load (pre-filled)
+  useEffect(() => {
+    if (!prefKey) return
+    try {
+      const saved = localStorage.getItem(prefKey)
+      if (saved) {
+        setDietPreference(saved)
+        // Sync legacy vegOnly with saved preference
+        setVegOnly(saved === 'veg')
+        // Always show the prompt so user confirms/changes each visit
+        setShowPrefPrompt(true)
+      } else {
+        // show prompt on first load for this QR
+        setShowPrefPrompt(true)
+      }
+    } catch (e) {
+      setShowPrefPrompt(true)
+    }
+  }, [prefKey])
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -193,13 +217,33 @@ export default function Page() {
 
   const filteredItems = useMemo(() => {
     let list = activeCategory === 'All' ? menuItems : menuItems.filter(i => i.category === activeCategory)
+    // Apply diet preference first
+    if (dietPreference === 'veg') {
+      list = list.filter(i => i.isVegetarian === true)
+    } else if (dietPreference === 'nonveg') {
+      list = list.filter(i => i.isVegetarian !== true) // anything not explicitly veg
+    } else if (dietPreference === 'vegan') {
+      list = list.filter(i => i.isVegan === true || (Array.isArray(i.tags) && i.tags.includes('vegan')))
+    }
+    // Legacy vegOnly toggle can still further restrict
     if (vegOnly) list = list.filter(i => i.isVegetarian)
     return list
-  }, [menuItems, activeCategory, vegOnly])
+  }, [menuItems, activeCategory, vegOnly, dietPreference])
 
   const handleConfirmationClose = () => {
     setShowConfirmation(false)
     setOrderData(null)
+  }
+
+  // When user changes diet preference from the dropdown in MenuItems
+  const handleDietPreferenceChange = (next) => {
+    try {
+      if (prefKey) localStorage.setItem(prefKey, next)
+    } catch {}
+    setDietPreference(next)
+    // Keep vegOnly in sync when choosing Veg; otherwise leave as-is
+    if (next === 'veg') setVegOnly(true)
+    else if (vegOnly) setVegOnly(false)
   }
 
   return (
@@ -221,6 +265,69 @@ export default function Page() {
             onTrackOrderClick={() => setIsOrderTrackerOpen(true)}
           />
 
+          {/* Diet Preference Prompt */}
+          <AnimatePresence>
+            {showPrefPrompt && (
+              <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center px-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                <motion.div
+                  initial={{ y: 40, opacity: 0, scale: 0.98 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  exit={{ y: 40, opacity: 0, scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  className="relative z-10 w-full max-w-md rounded-2xl p-5"
+                  style={{ backgroundColor: 'rgba(15, 18, 15, 0.95)', border: '2px solid rgb(212, 175, 55)' }}
+                >
+                  <button
+                    onClick={() => setShowPrefPrompt(false)}
+                    className="absolute top-3 right-3 text-sm px-2 py-1 rounded-md border"
+                    style={{ color: '#FFFAFA', borderColor: 'rgba(212,175,55,0.6)' }}
+                    aria-label="Close preference dialog"
+                  >
+                    Close
+                  </button>
+                  <h3 className="text-center text-lg font-semibold mb-1" style={{ color: '#FFFAFA' }}>Select your preference</h3>
+                  <p className="text-center text-xs mb-4" style={{ color: '#FFFAFA', opacity: 0.85 }}>This helps us show you the right dishes.</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => { setDietPreference('veg'); localStorage.setItem(prefKey, 'veg'); setShowPrefPrompt(false) }}
+                      className="px-3 py-3 rounded-xl text-sm font-semibold border"
+                      style={{ backgroundColor: 'rgba(30,30,30,0.6)', color: '#FFFAFA', borderColor: 'rgb(212, 175, 55)' }}
+                    >
+                      Veg
+                    </button>
+                    <button
+                      onClick={() => { setDietPreference('nonveg'); localStorage.setItem(prefKey, 'nonveg'); setShowPrefPrompt(false) }}
+                      className="px-3 py-3 rounded-xl text-sm font-semibold border"
+                      style={{ backgroundColor: 'rgba(30,30,30,0.6)', color: '#FFFAFA', borderColor: 'rgb(212, 175, 55)' }}
+                    >
+                      Non-veg
+                    </button>
+                    <button
+                      onClick={() => { setDietPreference('vegan'); localStorage.setItem(prefKey, 'vegan'); setShowPrefPrompt(false) }}
+                      className="px-3 py-3 rounded-xl text-sm font-semibold border"
+                      style={{ backgroundColor: 'rgba(30,30,30,0.6)', color: '#FFFAFA', borderColor: 'rgb(212, 175, 55)' }}
+                    >
+                      Vegan
+                    </button>
+                    <button
+                      onClick={() => { setDietPreference('all'); localStorage.setItem(prefKey, 'all'); setShowPrefPrompt(false) }}
+                      className="px-3 py-3 rounded-xl text-sm font-semibold border"
+                      style={{ backgroundColor: 'rgba(30,30,30,0.6)', color: '#FFFAFA', borderColor: 'rgb(212, 175, 55)' }}
+                    >
+                      All
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Main Content */}
           <main>
             <MenuItems
@@ -230,6 +337,8 @@ export default function Page() {
               categories={categories}
               vegOnly={vegOnly}
               onToggleVeg={() => setVegOnly(v => !v)}
+              dietPreference={dietPreference}
+              onDietPreferenceChange={handleDietPreferenceChange}
               cart={cartItems.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {})}
               onQuantityChange={(sel, qty) => {
                 const id = sel.id
@@ -246,13 +355,13 @@ export default function Page() {
                   setCartItems(prev => [...prev, { ...sel, quantity: nextQty }])
                 }
               }}
+              onGoToCart={() => setIsCartOpen(true)}
             />
 
           </main>
 
           {/* Footer */}
            <Footer restaurant={restaurant} /> 
-
           {/* Cart */}
           <Cart
             isOpen={isCartOpen}

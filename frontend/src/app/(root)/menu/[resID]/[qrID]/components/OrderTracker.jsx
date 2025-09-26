@@ -153,13 +153,12 @@ export default function OrderTracker({ isOpen, onClose }) {
               </div>
 
               <div className="text-right">
-                <span className="text-lg font-semibold" style={{ color: 'rgb(212, 175, 55)' }}>${searchedOrder.total}</span>
+                <span className="text-lg font-semibold" style={{ color: 'rgb(212, 175, 55)' }}>₹{Number(searchedOrder.total || 0).toFixed(2)}</span>
               </div>
 
               {renderStatusTimeline(searchedOrder.status)}
             </div>
           )}
-
           {orderId && !searchedOrder && !isSearching && (
             <div className="text-center py-4">
               <p className="text-gray-400">Order not found. Please check your Order ID.</p>

@@ -1,14 +1,44 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 import { CheckCircle, Clock, User, Phone } from "lucide-react"
+
+// Load Confetti on client only
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false })
 
 export default function OrderConfirmation({ isOpen, onClose, orderData }) {
   if (!orderData || !isOpen) return null
+
+  // Window size for confetti
+  const [dims, setDims] = useState({ width: 0, height: 0 })
+  const [confettiOn, setConfettiOn] = useState(false)
+
+  useEffect(() => {
+    const update = () => setDims({ width: window.innerWidth, height: window.innerHeight })
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  // Trigger a short confetti burst when the modal opens
+  useEffect(() => {
+    if (isOpen && orderData) {
+      setConfettiOn(true)
+      const t = setTimeout(() => setConfettiOn(false), 4500)
+      return () => clearTimeout(t)
+    }
+  }, [isOpen, orderData])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
       <div className="relative rounded-xl max-w-md w-full border-2 p-6" style={{ backgroundColor: 'rgb(15, 18, 15)', borderColor: 'rgb(212, 175, 55)' }}>
+        {confettiOn && (
+          <div className="pointer-events-none absolute inset-0 -z-0">
+            <Confetti width={dims.width} height={dims.height} numberOfPieces={240} recycle={false} gravity={0.3} initialVelocityY={12} tweenDuration={4000} />
+          </div>
+        )}
         <div className="text-center space-y-6">
           <div className="flex flex-col items-center space-y-3">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
@@ -16,7 +46,7 @@ export default function OrderConfirmation({ isOpen, onClose, orderData }) {
             </div>
             <div>
               <h2 className="text-xl font-bold" style={{ color: 'rgb(212, 175, 55)' }}>Order Confirmed!</h2>
-              <p className="text-gray-400 text-sm mt-1">Thank you for your order</p>
+              <p className="text-gray-400 text-sm mt-1" style={{ opacity: 0.7 }}>Thank you for your order</p>
             </div>
           </div>
 
@@ -74,8 +104,8 @@ export default function OrderConfirmation({ isOpen, onClose, orderData }) {
           )}
 
           <div className="space-y-3">
-            <p className="text-xs text-gray-400">
-              A confirmation has been sent to {orderData.customerInfo.email} and via WhatsApp to {orderData.customerInfo.phone}
+            <p className="text-xs text-gray-400" style={{ opacity: 0.7 }}>
+              We'll send your confirmation and updates to {orderData.customerInfo.email || 'your email'} and {orderData.customerInfo.phone}.
             </p>
 
             <button
