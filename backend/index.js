@@ -4,22 +4,22 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+
 const { verifyEmailConfig } = require("./utils/emailService");
 const { isConfigured: isWhatsAppConfigured } = require("./utils/whatsappService");
 
 const app = express();
 
-// ---- Security middleware ----
+// ---- Security Middleware ----
 app.use(helmet());
 
 // ---- CORS Setup ----
-const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, "");
+const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, ""); // remove trailing slash
 const allowedOrigins = frontendUrl ? [frontendUrl] : [];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow non-browser requests (e.g., curl, Postman)
-    if (!origin) return callback(null, true);
+    if (!origin) return callback(null, true); // Allow Postman, curl, etc.
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
@@ -29,26 +29,33 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Authorization", "Content-Type"],
 };
 
+// 🔥 Apply CORS middleware early
 app.use(cors(corsOptions));
 
-// Handle preflight requests globally
+// 🔥 Handle all preflight requests
 app.options("*", cors(corsOptions));
 
-// ---- Rate limiting ----
+// ---- Debug Logger for CORS ----
+app.use((req, res, next) => {
+  console.log(`[CORS DEBUG] ${req.method} ${req.path} from ${req.headers.origin}`);
+  next();
+});
+
+// ---- Rate Limiting ----
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
 });
 app.use(limiter);
 
-// ---- Body parsing middleware ----
+// ---- Body Parsing ----
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// ---- MongoDB connection ----
+// ---- MongoDB Connection ----
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/restaurant-ordering", {
     useNewUrlParser: true,
@@ -56,12 +63,6 @@ mongoose
   })
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
-// ---- Log incoming origins for debugging ----
-app.use((req, res, next) => {
-  console.log("[Incoming request] Origin:", req.headers.origin);
-  next();
-});
 
 // ---- Routes ----
 app.use("/api/auth", require("./routes/auth"));
@@ -74,7 +75,7 @@ app.use("/api/orders", require("./routes/orders"));
 app.use("/api/qr", require("./routes/qr"));
 app.use("/api/banner", require("./routes/banner"));
 
-// ---- Health check endpoint ----
+// ---- Health Check ----
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -83,7 +84,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ---- Integrations health endpoint ----
+// ---- Integrations Health Check ----
 app.get("/api/health/integrations", async (req, res) => {
   try {
     const emailStatus = await verifyEmailConfig();
@@ -98,38 +99,38 @@ app.get("/api/health/integrations", async (req, res) => {
   }
 });
 
-// ---- Error handling middleware ----
+// ---- Error Handling ----
 app.use((err, req, res, next) => {
-  console.error("[Error handler]", err.stack);
+  console.error("[ERROR]", err.stack);
   res.status(500).json({
     message: "Something went wrong!",
     error: process.env.NODE_ENV === "development" ? err.message : {},
   });
 });
 
-// ---- 404 handler ----
+// ---- 404 Handler ----
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// ---- Server Startup ----
+// ---- Start Server ----
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log("[Startup] CORS allowed origins:", allowedOrigins);
+  console.log("[Startup] Allowed CORS Origins:", allowedOrigins);
 
   verifyEmailConfig()
     .then((status) => {
       if (status.configured) {
         console.log("[Startup] Email transport verified: OK");
       } else {
-        console.warn("[Startup] Email transport NOT configured:", status.error);
+        console.warn("[Startup] Email NOT configured:", status.error);
       }
     })
-    .catch((e) => console.warn("[Startup] Email verify threw:", e?.message || e));
+    .catch((e) => console.warn("[Startup] Email verify error:", e?.message || e));
 
   const waConfigured = isWhatsAppConfigured();
-  console.log(`[Startup] WhatsApp (Twilio) configured: ${waConfigured ? "YES" : "NO"}`);
+  console.log(`[Startup] WhatsApp configured: ${waConfigured ? "YES" : "NO"}`);
 });
 
 module.exports = app;
