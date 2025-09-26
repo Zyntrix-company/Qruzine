@@ -421,11 +421,17 @@ router.post("/restaurants/:resID/reset-credentials", authenticateSuperAdmin, asy
     restaurant.credentials.password = hashedPassword
     await restaurant.save()
 
-    // Send new credentials email if email is provided
+    // Send new credentials email if email is provided (non-blocking)
     if (restaurant.contactInfo?.email) {
-      await sendRestaurantCredentials(restaurant, {
-        adminId: restaurant.credentials.adminId,
-        password: newPassword,
+      setImmediate(async () => {
+        try {
+          await sendRestaurantCredentials(restaurant, {
+            adminId: restaurant.credentials.adminId,
+            password: newPassword,
+          })
+        } catch (e) {
+          console.warn("[Email] Failed to send reset credentials email (non-blocking):", e?.message || e)
+        }
       })
     }
 
@@ -712,22 +718,23 @@ router.post("/send-credentials", authenticateSuperAdmin, async (req, res) => {
       });
     }
 
-    // Send credentials email
-    const result = await sendRestaurantCredentials(restaurantData, restaurantData.credentials);
+    // Queue email sending (non-blocking)
+    setImmediate(async () => {
+      try {
+        const result = await sendRestaurantCredentials(restaurantData, restaurantData.credentials);
+        if (!result.success) {
+          console.warn("[Email] send-credentials failed:", result.error);
+        }
+      } catch (e) {
+        console.warn("[Email] send-credentials error:", e?.message || e);
+      }
+    });
 
-    if (result.success) {
-      res.json({
-        success: true,
-        message: "Credentials sent successfully via email",
-        messageId: result.messageId,
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "Failed to send email",
-        error: result.error,
-      });
-    }
+    // Respond immediately to avoid frontend timeouts if SMTP is slow/unavailable
+    res.status(202).json({
+      success: true,
+      message: "Credentials email queued for sending",
+    });
   } catch (error) {
     console.error("Send credentials error:", error);
     res.status(500).json({
