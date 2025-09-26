@@ -183,9 +183,15 @@ router.post("/restaurants", authenticateSuperAdmin, restaurantValidation, async 
 
     await restaurant.save()
 
-    // Send credentials email if email is provided
+    // Send credentials email if email is provided (non-blocking)
     if (contactInfo?.email) {
-      await sendRestaurantCredentials(restaurant, { adminId, password })
+      setImmediate(async () => {
+        try {
+          await sendRestaurantCredentials(restaurant, { adminId, password })
+        } catch (e) {
+          console.warn("[Email] Failed to send credentials email (non-blocking):", e?.message || e)
+        }
+      })
     }
 
     res.status(201).json({

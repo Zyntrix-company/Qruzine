@@ -14,8 +14,16 @@ const app = express();
 app.use(helmet());
 
 // ---- CORS Setup ----
-const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, ""); // remove trailing slash
-// Allow common localhost ports in development when FRONTEND_URL isn't set
+// Support multiple frontend URLs via FRONTEND_URLS (comma-separated) or single FRONTEND_URL
+const envFrontendUrls = (process.env.FRONTEND_URLS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((s) => s.replace(/\/$/, "")); // remove trailing slash
+
+const singleFrontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, "");
+
+// Allow common localhost ports in development when FRONTEND_URL(S) isn't set
 const devFallbackOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
@@ -24,12 +32,23 @@ const devFallbackOrigins = [
   "http://localhost:8080",
   "http://127.0.0.1:8080",
 ];
-const allowedOrigins = frontendUrl ? [frontendUrl] : devFallbackOrigins;
+
+const allowedOrigins = [
+  ...envFrontendUrls,
+  ...(singleFrontendUrl ? [singleFrontendUrl] : []),
+  ...(envFrontendUrls.length === 0 && !singleFrontendUrl ? devFallbackOrigins : []),
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true); // Allow Postman, curl, etc.
-    if (allowedOrigins.includes(origin)) {
+
+    const isExactAllowed = allowedOrigins.includes(origin);
+    // Optional: allow Vercel preview deployments if you add pattern via env
+    const vercelPattern = process.env.ALLOW_VERCEL_PATTERN === "true";
+    const isVercel = vercelPattern && /\.vercel\.app$/.test(new URL(origin).hostname);
+
+    if (isExactAllowed || isVercel) {
       return callback(null, true);
     } else {
       console.warn("[CORS] Blocked origin:", origin);
@@ -37,7 +56,7 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Authorization", "Content-Type"],
 };
 
@@ -127,6 +146,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log("[Startup] Allowed CORS Origins:", allowedOrigins);
+  if (process.env.ALLOW_VERCEL_PATTERN === "true") {
+    console.log("[Startup] Vercel wildcard CORS enabled for *.vercel.app");
+  }
 
   verifyEmailConfig()
     .then((status) => {
