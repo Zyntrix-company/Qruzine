@@ -109,7 +109,8 @@ class ApiService {
   getToken() {
     if (this.token) return this.token;
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
+      // Prefer the admin token; fall back to legacy key if present
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
       if (token) {
         this.token = token;
       }
